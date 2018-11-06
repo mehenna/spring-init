@@ -1,0 +1,9 @@
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="f"%>
+<html>
+<head>
+<title>First web application reviews ..</title>
+<link href="webjars/bootstrap/3.3.6/css/bootstrap.min.css"
+	rel="stylesheet">
+</head>
+</head>
+<body>
