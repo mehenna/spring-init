@@ -8,6 +8,8 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -15,16 +17,12 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.mmi.review.model.Todo;
 import com.mmi.review.service.TodoService;
 
 @Controller
-@SessionAttributes("name")
 public class Todocontroller {
 	
 	private  TodoService todoService ;
@@ -51,7 +49,7 @@ public class Todocontroller {
 
 	@GetMapping(value="/add-todo")
 	public String addTodosList(ModelMap model) {
-		model.addAttribute("todo", new Todo(0,(String)model.get("name") ,"INIT", new Date(),false));
+		model.addAttribute("todo", new Todo(0,getLoggedInUserName(model) ,"INIT", new Date(),false));
 		return "todo";
 	}
 
@@ -60,7 +58,7 @@ public class Todocontroller {
 		if (result.hasErrors()) {
 			return "todo";
 		}
-		todoService.addTodos((String)model.get("name") , todo.getDesc(), new Date(), false);
+		todoService.addTodos(getLoggedInUserName(model) , todo.getDesc(), new Date(), false);
 		return "redirect:/list-todos";
 	}
 
@@ -72,7 +70,10 @@ public class Todocontroller {
 	}
 
 	@GetMapping(value="/update-todo")
-	public String updateTodo(ModelMap model , @RequestParam int id) {
+	public String updateTodo(ModelMap model , @RequestParam int id) throws Exception {
+		if(id==1)
+			throw new Exception("Teste generating Errors !!!");
+		
 		Optional<Todo> result =  todoService.retrieveTodo(id) ;
 		Todo todo= result.isPresent() ? result.get() : null;
 		model.put("todo",todo);
@@ -84,11 +85,25 @@ public class Todocontroller {
 		if (result.hasErrors()) {
 			return "todo";
 		}
-		todo.setUser((String)model.get("name"));
+		todo.setUser(getLoggedInUserName(model));
 		todoService.updateTodos(todo);
 		return "redirect:/list-todos";
 	}
-
-
+//	/**
+//	 * 
+//	 * @param model
+//	 * @return
+//	 */
+//	private String getLoggedInUserName(ModelMap model) {
+//		return (String)model.get("name");
+//	}
+	
+	private String getLoggedInUserName(ModelMap model) {
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (principal instanceof UserDetails)
+			return ((UserDetails) principal).getPassword();
+		else
+			return principal.toString();
+	}
 }
 
