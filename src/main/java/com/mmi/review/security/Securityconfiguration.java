@@ -15,6 +15,9 @@ public class Securityconfiguration  extends WebSecurityConfigurerAdapter {
 	@Override
 	public UserDetailsService userDetailsServiceBean() {
 		UserDetails user=User.withUsername("user").password("{noop}test").roles("USER").build();
+		
+//		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+//		UserDetails user=User.withUsername("user").password(encoder.encode("test").roles("USER").build();
 
 		return new InMemoryUserDetailsManager(user);
 	}
